@@ -1,9 +1,5 @@
 from p5 import Vector
 import numpy as np
-import PySimpleGUI as psg
-
-#The above libraries should be imported to work
-#Pycharm SHOULD be opened through the Anaconda enviroment otherwise one of the libararies fails(Glfw)
 
 class Birds():
 
@@ -22,6 +18,7 @@ class Birds():
         self.height = height
         self.drawing_id = None
 
+        self.birds_flying_together = 0
 
     def update(self):
         self.pos += self.speed
@@ -36,7 +33,7 @@ class Birds():
     def show(self, window):
         graph = window.Element('_GRAPH_')
         if self.drawing_id is None:
-            self.drawing_id = graph.DrawCircle((self.pos.x, self.pos.y), radius=4, fill_color='black')
+            self.drawing_id = graph.DrawCircle((self.pos.x, self.pos.y), radius=5, fill_color='black')
         else:
             graph.RelocateFigure(self.drawing_id, self.pos.x, self.pos.y)
 
@@ -50,6 +47,7 @@ class Birds():
         self.acceleration += cohesion
         self.acceleration += separation
 
+    # Is the box that keeps the birds inside of it
     def edges(self):
         if self.pos.x > self.width:
             self.pos.x = 0
@@ -61,6 +59,7 @@ class Birds():
         elif self.pos.y < 0:
             self.pos.y = self.height
 
+    # Alignment is a behavior that causes a particular agent to line up with agents close by.
     def align(self, birds):
         steering = Vector(*np.zeros(2))
         total = 0
@@ -77,6 +76,8 @@ class Birds():
 
         return steering
 
+    # Cohesion is the behavior that causes birds to steer towards the "center of mass" - that is,
+    # the average position of the bird within a certain radius.
     def cohesion(self, birds):
         steering = Vector(*np.zeros(2))
         total = 0
@@ -97,6 +98,7 @@ class Birds():
 
         return steering
 
+    # Separation is the behavior that causes a bird to steer away from all of its neighbors
     def separation(self, birds):
         steering = Vector(*np.zeros(2))
         total = 0
@@ -117,4 +119,5 @@ class Birds():
             if np.linalg.norm(steering) > self.max_force:
                 steering = (steering /np.linalg.norm(steering)) * self.max_force
 
+        self.birds_flying_together = total
         return steering
